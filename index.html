@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Triagem — Dra. Vanessa Wendling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rose:#F0778B; --rose-l:#FDF2F4; --rose-m:#F7A1AD;
+  --dark:#4A3F41; --mid:#8C7C7E; --border:#F3E1E4; --white:#FFFFFF;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--white);font-family:'Montserrat',sans-serif;color:var(--dark);}
+::-webkit-scrollbar{width:0}
+
+.progress-bar{width:100%;height:3px;background:var(--border);}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--rose-m),var(--rose));transition:width .6s cubic-bezier(.4,0,.2,1);}
+
+.welcome{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;text-align:center;}
+.logo{width:150px;margin-bottom:20px;object-fit:contain;}
+.brand-title{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:600;color:var(--rose);margin:0 0 6px;line-height:1.2;}
+.brand-sub{font-size:12px;color:var(--rose-m);letter-spacing:2px;text-transform:uppercase;font-weight:500;margin:0 0 28px;}
+.welcome-text{font-size:14px;color:var(--mid);line-height:1.7;margin:0 0 24px;max-width:360px;}
+.name-input{width:100%;max-width:380px;padding:17px;border-radius:12px;border:1.5px solid var(--border);font-size:15px;color:var(--dark);font-family:'Montserrat',sans-serif;outline:none;text-align:center;transition:border-color .3s;margin-bottom:16px;display:block;}
+.name-input:focus{border-color:var(--rose);}
+.btn-main{width:100%;max-width:380px;padding:17px;border-radius:12px;border:none;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .3s;display:block;}
+.btn-on{background:var(--rose);color:#fff;box-shadow:0 4px 15px rgba(240,119,139,.3);}
+.btn-off{background:var(--border);color:var(--mid);cursor:not-allowed;}
+.privacy{margin-top:22px;font-size:11px;color:var(--mid);font-style:italic;}
+
+.quiz-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding-bottom:60px;}
+.quiz-inner{width:100%;max-width:580px;}
+.quiz-header{padding:26px 24px 12px;text-align:center;display:flex;flex-direction:column;align-items:center;}
+.quiz-logo{height:66px;margin-bottom:10px;object-fit:contain;}
+.quiz-brand{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:var(--rose);margin-bottom:10px;}
+.step-label{font-size:12px;color:var(--rose);font-weight:600;display:flex;align-items:center;gap:6px;padding:0 24px;margin-bottom:2px;}
+.question-text{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--dark);line-height:1.4;padding:16px 24px 6px;}
+.options-wrap{padding:10px 24px;display:flex;flex-direction:column;gap:9px;}
+.opt-btn{text-align:left;padding:13px 16px;border-radius:12px;border:1.5px solid var(--border);background:#fff;color:var(--mid);font-size:14px;font-weight:400;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px;font-family:'Montserrat',sans-serif;width:100%;}
+.opt-btn.active{border-color:var(--rose);background:var(--rose-l);color:var(--dark);font-weight:500;}
+.opt-ind{width:20px;height:20px;border-radius:50%;border:1.5px solid #D1C7C9;background:#fff;flex-shrink:0;transition:all .2s;}
+.opt-ind.circ.active{border:6px solid var(--rose);}
+.opt-ind.chk{border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--rose);}
+.opt-ind.chk.active{border-color:var(--rose);background:var(--rose-l);}
+.text-area{width:100%;padding:15px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;color:var(--dark);background:#fff;outline:none;resize:none;font-family:'Montserrat',sans-serif;line-height:1.6;transition:border-color .3s;}
+.text-area:focus{border-color:var(--rose);}
+.nav-btns{padding:16px 24px;display:flex;gap:14px;}
+.btn-back{flex:1;padding:15px;border-radius:12px;border:1.5px solid var(--border);background:transparent;color:var(--mid);font-size:13px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;}
+.btn-next{flex:2;padding:15px;border-radius:12px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .3s;font-family:'Montserrat',sans-serif;}
+.btn-next.on{background:var(--rose);color:#fff;}
+.btn-next.off{background:var(--border);color:var(--mid);cursor:not-allowed;}
+
+.fullscreen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;padding:32px;text-align:center;}
+.f-logo{height:88px;margin-bottom:24px;opacity:.7;}
+.f-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--dark);}
+.f-sub{font-size:13px;color:var(--mid);margin-top:8px;font-style:italic;}
+@keyframes pulse-img{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+.pulse{animation:pulse-img 2s infinite;}
+.s-check{width:68px;height:68px;border-radius:50%;background:var(--rose-l);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 22px;color:var(--rose);}
+.s-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--dark);margin-bottom:12px;}
+.s-text{color:var(--mid);font-size:14px;line-height:1.6;max-width:300px;margin:0 auto;}
+</style>
+</head>
+<body>
+
+<!-- BOAS-VINDAS -->
+<div id="view-welcome" class="welcome">
+  <img src="logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
+  <h1 class="brand-title">Dra. Vanessa Wendling</h1>
+  <p class="brand-sub">Ginecologia e Obstetrícia</p>
+  <p class="welcome-text">Para que possamos oferecer um atendimento personalizado, responda este breve questionário antes da consulta.</p>
+  <input type="text" id="nome-input" class="name-input" placeholder="Digite seu nome completo"
+    oninput="checkName()" onkeydown="if(event.key==='Enter')tryStart()">
+  <button id="btn-start" class="btn-main btn-off" onclick="tryStart()" disabled>Iniciar Triagem</button>
+  <p class="privacy">* Suas respostas são enviadas de forma totalmente sigilosa.</p>
+</div>
+
+<!-- QUESTIONÁRIO -->
+<div id="view-quiz" style="display:none" class="quiz-wrap">
+  <div class="quiz-inner">
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    <div class="quiz-header">
+      <img src="logo.png" alt="Logo" class="quiz-logo" onerror="this.style.display='none'">
+      <div class="quiz-brand">Dra. Vanessa Wendling</div>
+    </div>
+    <div id="step-label" class="step-label"></div>
+    <div id="question-text" class="question-text"></div>
+    <div id="options-area" class="options-wrap"></div>
+    <div class="nav-btns">
+      <button id="btn-back" class="btn-back" onclick="goBack()" style="display:none">Voltar</button>
+      <button id="btn-next" class="btn-next off" onclick="goNext()" disabled>Próxima</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="view-loading" style="display:none" class="fullscreen">
+  <img src="logo.png" alt="" class="f-logo pulse" onerror="this.style.display='none'">
+  <p class="f-title" id="load-title">Analisando suas respostas...</p>
+  <p class="f-sub" id="load-sub">Isso leva apenas alguns segundos</p>
+</div>
+
+<!-- SUCESSO -->
+<div id="view-success" style="display:none" class="fullscreen">
+  <img src="logo.png" alt="Logo" style="width:100%;max-width:160px;margin-bottom:36px" onerror="this.style.display='none'">
+  <div class="s-check">✓</div>
+  <h2 class="s-title">Questionário Finalizado</h2>
+  <p class="s-text">Suas informações foram enviadas com segurança.<br>Por favor, aguarde na recepção — a Dra. Vanessa irá chamá-la em breve.</p>
+</div>
+
+<script>
+// ╔══════════════════════════════════════════════════════════╗
+// ║              ⚙️  CONFIGURAÇÃO — EDITE AQUI              ║
+// ╠══════════════════════════════════════════════════════════╣
+// Cole a URL obtida após fazer a "Nova Implantação" do seu Apps Script:
+var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNYQ25rS2JjS8H8gVCIsxAT0G17eQ1o_vC4hV79XmdgLm08MHuDm5nneXeBFSnbNud/exec";
+// ╚══════════════════════════════════════════════════════════╝
+
+var STEPS = [
+  { id:"perfil", title:"Seu Perfil", icon:"👤", questions:[
+    { id:"idade", label:"Qual é a sua faixa etária?", type:"single",
+      options:["Menos de 18 anos","18 – 25 anos","26 – 35 anos","36 – 45 anos","46 – 55 anos","56 – 65 anos","Acima de 65 anos"] },
+    { id:"status_reprodutivo", label:"Qual é o seu status reprodutivo atual?", type:"single",
+      options:["Nunca engravidei","Tentando engravidar","Gestante","Pós-parto (menos de 1 ano)","Pós-parto (mais de 1 ano)","Pós-menopausa","Histerectomia prévia"] }
+  ]},
+  { id:"menstrual", title:"Ciclo Menstrual", icon:"🌸", questions:[
+    { id:"ultimo_preventivo", label:"Quando foi seu último exame preventivo (Papanicolau)?", type:"single",
+      options:["Menos de 1 ano atrás","Entre 1 e 3 anos atrás","Mais de 3 anos atrás","Nunca realizei","Não se aplica (sem útero)"] },
+    { id:"ciclo", label:"Como é o seu ciclo menstrual atualmente?", type:"single",
+      options:["Regular e sem queixas","Irregular (ciclos variáveis)","Fluxo muito intenso ou com cólicas fortes","Fluxo muito escasso","Ausente (amenorreia)","Em uso de hormônios / anticoncepcional"] },
+    { id:"sangramento_irregular", label:"Você tem sangramento fora do período menstrual ou após relações sexuais?", type:"single",
+      options:["Não","Às vezes","Sim, com frequência"] }
+  ]},
+  { id:"sexual", title:"Saúde Sexual", icon:"🤍", questions:[
+    { id:"contraceptivo", label:"Você utiliza algum método contraceptivo?", type:"single",
+      options:["Sim, pílula oral","Sim, DIU (cobre ou hormonal)","Sim, injeção hormonal","Sim, implante subdérmico","Sim, preservativo","Não utilizo","Estou planejando iniciar"] },
+    { id:"dor_relacao", label:"Você sente dor durante as relações sexuais?", type:"single",
+      options:["Não","Às vezes, leve","Com frequência, moderada","Sempre ou intensa","Não tenho vida sexual ativa no momento"] },
+    { id:"libido", label:"Como você avalia seu desejo sexual atualmente?", type:"single",
+      options:["Satisfatório","Diminuído em relação ao que era antes","Muito baixo / ausente","Aumentado"] }
+  ]},
+  { id:"menopausa", title:"Climatério & Menopausa", icon:"🌿", questions:[
+    { id:"fogachos", label:"Você tem ondas de calor (fogachos) ou sudorese noturna?", type:"single",
+      options:["Não","Raramente / leve","Com frequência / moderado","Intenso, afeta minha qualidade de vida"] },
+    { id:"ressecamento", label:"Você percebe ressecamento vaginal ou desconforto na região íntima?", type:"single",
+      options:["Não","Leve, ocasional","Moderado","Intenso, interfere na vida diária"] },
+    { id:"humor_sono", label:"Você tem alterações de humor, ansiedade ou dificuldades para dormir?", type:"multi",
+      options:["Irritabilidade ou mudanças de humor","Ansiedade ou nervosismo","Insônia ou sono ruim","Tristeza ou desânimo","Nenhum desses sintomas"] }
+  ]},
+  { id:"pelvico", title:"Assoalho Pélvico & Estética", icon:"✨", questions:[
+    { id:"incontinencia", label:"Você tem perda involuntária de urina (ao tossir, espirrar, treinar)?", type:"single",
+      options:["Não","Raramente, gotejamento mínimo","Às vezes, perda moderada","Com frequência, perda significativa"] },
+    { id:"peso_pelvico", label:"Sente sensação de peso ou pressão no 'pé da barriga' (pelve)?", type:"single",
+      options:["Nunca senti","Às vezes, leve","Frequente ou incomoda bastante"] },
+    { id:"frouxidao", label:"Sente frouxidão vaginal ou entrada de ar durante a relação sexual?", type:"single",
+      options:["Não sinto nenhuma alteração","Sinto um pouco","Sinto muita frouxidão"] },
+    { id:"estetica_intima", label:"Você tem interesse em procedimentos de estética íntima ou rejuvenescimento?", type:"single",
+      options:["Tenho curiosidade, mas não sei o que existe","Sim, já pesquisei sobre o assunto","Sim, é um dos motivos da minha consulta","Não tenho interesse no momento"] },
+    { id:"queixas_esteticas", label:"Você tem alguma dessas queixas estéticas ou funcionais?", type:"multi",
+      options:["Lábios maiores/menores com aparência que me incomoda","Escurecimento da pele da região íntima","Incômodo ao usar roupas justas","Frouxidão vaginal ou redução da sensibilidade","Nenhuma dessas"] }
+  ]},
+  { id:"motivo", title:"Motivo da Consulta", icon:"📋", questions:[
+    { id:"motivo_consulta", label:"Qual é o principal motivo da sua consulta hoje? (pode selecionar mais de um)", type:"multi",
+      options:["Rotina / check-up ginecológico","Dúvidas sobre contracepção","Desejo de engravidar","Sintomas menopáusicos","Dor ou desconforto íntimo","Estética íntima","Incontinência urinária","Sangramento irregular","Outro motivo"] },
+    { id:"observacao", label:"Há algo mais que você gostaria de nos contar antes de entrar na sala?", type:"text",
+      placeholder:"Sinta-se à vontade para escrever aqui..." }
+  ]}
+];
+
+// Flatten
+var ALL_Q = [];
+STEPS.forEach(function(s){ s.questions.forEach(function(q){ ALL_Q.push({step:s,q:q}); }); });
+var TOTAL = ALL_Q.length;
+
+// ── STATE ──────────────────────────────────────────────────
+var nome = "";
+var answers = {};
+var cursor = 0;
+
+// ── BOAS-VINDAS ────────────────────────────────────────────
+function checkName(){
+  var v = document.getElementById("nome-input").value.trim();
+  var btn = document.getElementById("btn-start");
+  var ok = v.length >= 3;
+  btn.className = "btn-main " + (ok ? "btn-on" : "btn-off");
+  btn.disabled = !ok;
+}
+function tryStart(){
+  var v = document.getElementById("nome-input").value.trim();
+  if(v.length < 3) return;
+  nome = v; cursor = 0; answers = {};
+  showView("quiz");
+  renderQ();
+}
+
+// ── RENDER PERGUNTA ────────────────────────────────────────
+function renderQ(){
+  var item = ALL_Q[cursor];
+  var q = item.q;
+
+  document.getElementById("progress").style.width = ((cursor+1)/TOTAL*100)+"%";
+  document.getElementById("step-label").innerHTML = "<span>"+item.step.icon+"</span> "+item.step.title;
+  document.getElementById("question-text").textContent = q.label;
+  document.getElementById("btn-back").style.display = cursor > 0 ? "block" : "none";
+
+  var area = document.getElementById("options-area");
+  area.innerHTML = "";
+
+  if(q.type === "text"){
+    var ta = document.createElement("textarea");
+    ta.className = "text-area"; ta.rows = 4;
+    ta.placeholder = q.placeholder || "";
+    ta.value = answers[q.id] || "";
+    ta.oninput = function(){ answers[q.id] = ta.value; updateNext(); };
+    area.appendChild(ta);
+  } else {
+    var isMulti = q.type === "multi";
+    var current = answers[q.id];
+    var sel = Array.isArray(current) ? current : (current ? [current] : []);
+    q.options.forEach(function(opt){
+      var isActive = isMulti ? sel.indexOf(opt) > -1 : current === opt;
+      var btn = document.createElement("button");
+      btn.className = "opt-btn" + (isActive ? " active" : "");
+      var ind = document.createElement("div");
+      ind.className = "opt-ind " + (isMulti ? "chk" : "circ") + (isActive ? " active" : "");
+      if(isMulti && isActive) ind.textContent = "✓";
+      var lbl = document.createElement("span");
+      lbl.textContent = opt;
+      btn.appendChild(ind); btn.appendChild(lbl);
+      btn.onclick = function(){
+        if(isMulti){
+          var none = ["Nenhum desses sintomas","Nenhuma dessas"];
+          if(none.indexOf(opt) > -1){ answers[q.id] = [opt]; }
+          else {
+            var prev = Array.isArray(answers[q.id])
+              ? answers[q.id].filter(function(x){ return none.indexOf(x)===-1; }) : [];
+            var idx = prev.indexOf(opt);
+            if(idx > -1) prev.splice(idx,1); else prev.push(opt);
+            answers[q.id] = prev;
+          }
+        } else { answers[q.id] = opt; }
+        renderQ();
+      };
+      area.appendChild(btn);
+    });
+  }
+  updateNext();
+}
+
+function updateNext(){
+  var q = ALL_Q[cursor].q;
+  var val = answers[q.id];
+  var ok = q.type==="text" ? true : q.type==="multi"
+    ? (Array.isArray(val)&&val.length>0) : !!val;
+  var btn = document.getElementById("btn-next");
+  btn.textContent = cursor===TOTAL-1 ? "Enviar Respostas" : "Próxima";
+  btn.className = "btn-next " + (ok?"on":"off");
+  btn.disabled = !ok;
+}
+function goBack(){ if(cursor>0){ cursor--; renderQ(); } }
+function goNext(){
+  var q = ALL_Q[cursor].q; var val = answers[q.id];
+  var ok = q.type==="text"?true:q.type==="multi"?(Array.isArray(val)&&val.length>0):!!val;
+  if(!ok) return;
+  if(cursor < TOTAL-1){ cursor++; renderQ(); }
+  else { submitAll(); }
+}
+
+// ── ENVIO PRINCIPAL ────────────────────────────────────────
+async function submitAll(){
+  showView("loading");
+  setLoad("Enviando triagem e gerando análise com IA...", "Aguarde alguns segundos");
+
+  var dados = { nome_paciente: nome };
+  ALL_Q.forEach(function(item){
+    var v = answers[item.q.id];
+    dados[item.q.id] = Array.isArray(v) ? v.join(", ") : (v || "");
+  });
+
+  try{
+    if(!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("COLE") > -1){
+      console.warn("URL do Apps Script não configurada.");
+      showView("success");
+      return;
+    }
+
+    await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type":"text/plain"},
+      body: JSON.stringify(dados)
+    });
+  } catch(e){ 
+    console.error("Erro ao enviar dados para o Apps Script:", e.message); 
+  }
+
+  showView("success");
+}
+
+function showView(v){
+  ["welcome","quiz","loading","success"].forEach(function(id){
+    var el = document.getElementById("view-"+id);
+    el.style.display = (id===v) ? "flex" : "none";
+  });
+}
+function setLoad(t,s){
+  document.getElementById("load-title").textContent = t;
+  document.getElementById("load-sub").textContent = s;
+}
+</script>
+</body>
+</html>
