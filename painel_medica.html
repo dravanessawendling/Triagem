@@ -123,6 +123,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{display:inline-block;animation:spin 1s linear infinite;}
 
+/* BANNER REENVIO */
+.btn-amber{background:var(--amber);color:white;}
+.btn-amber:hover:not(:disabled){background:#b8753a;}
+.reenvio-banner{background:var(--amber-l);border:1px solid var(--amber);border-radius:11px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;}
+.reenvio-txt{font-size:13px;color:var(--dark);line-height:1.5;}
+.reenvio-txt strong{color:var(--amber);}
+
 /* PATIENT TABLE ROW */
 .pat-row{padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .15s;}
 .pat-row:last-child{border-bottom:none;}
@@ -221,6 +228,7 @@ var S = {
   editMode: false,
   editData: {},
   syncing: false,
+  reenviando: null,
   view: "dashboard"
 };
 
@@ -351,7 +359,7 @@ function renderPatList(){
       +'<div class="pat-name">'+nm+'</div>'
       +'<div class="pat-meta">'+(p.idade||"—")+'</div>'
       +(hasHigh?'<span class="badge b-err">⚠ Alerta</span>':hasMed?'<span class="badge b-amb">⚡ Atenção</span>':"")
-      +(temAnalise?'<span class="badge b-ok">✓ Analisado</span>':"")
+      +(temAnalise?'<span class="badge b-ok">✓ Analisado</span>':(hasHigh||hasMed?"":'<span class="badge b-amb">⚡ Sem análise</span>'))
       +'</div>';
   }).join("");
 }
@@ -370,7 +378,7 @@ function renderDashboard(){
     var alerts=visualAlerts(p).filter(function(a){return a.lv==="alta";});
     var temAnalise=!!getField(p,GEMINI_RESUMO);
     var tags=alerts.map(function(a){return'<span class="badge b-err">⚠ '+a.field+'</span>';}).join("")
-      +(temAnalise?'<span class="badge b-ok">✓ Gemini</span>':"");
+      +(temAnalise?'<span class="badge b-ok">✓ Gemini</span>':(alerts.length?"":'<span class="badge b-amb">⚡ Sem análise</span>'));
     return '<div class="pat-row" onclick="openPatient('+i+')">'
       +'<div><div class="pat-row-name">'+nm+'</div>'
       +'<div class="pat-row-sub">'+(p.idade||"—")+' · '+disp(p.motivo_consulta)+'</div>'
@@ -431,14 +439,30 @@ function renderPatient(){
         return'<div class="al al-h"><span style="font-size:15px;flex-shrink:0">🔴</span><div><div class="al-title">Atenção: '+a.field+'</div><div class="al-text">'+a.val+'</div></div></div>';
       }).join("")+'</div>':"");
 
+  // ── Detecta análise e estado de reenvio
+  var analisePronta = gemResumo.trim().length > 10;
+  var isReenviando  = S.reenviando === nm;
+
+  // ── Banner de reenvio (exibido quando não há análise)
+  var reenvioHtml = !analisePronta
+    ? '<div class="reenvio-banner">'
+        +'<div class="reenvio-txt"><strong>⚡ Análise Gemini não encontrada</strong><br>'
+        +'Pode ter ocorrido um erro no envio. Clique para reprocessar.</div>'
+        +(isReenviando
+          ?'<button class="btn btn-amber btn-sm" disabled><span class="spin">↻</span> Reenviando...</button>'
+          :'<button class="btn btn-amber btn-sm" onclick="reenviarParaGemini()">↻ Reenviar para Gemini</button>'
+        )
+      +'</div>'
+    : "";
+
   // ── Coluna da ANÁLISE GEMINI
   var analiseCol='<div class="card">'
     +'<div class="card-head"><span class="card-title">🤖 Análise Gemini</span>'
-    +'<span style="font-size:11px;color:var(--mid);font-style:italic">Gerada automaticamente no envio</span></div>'
+    +'<span style="font-size:11px;color:var(--mid);font-style:italic">'+(analisePronta?'Gerada automaticamente no envio':'Não disponível')+'</span></div>'
     +'<div class="card-body">'
-    +(gemResumo
+    +(analisePronta
       ?'<div class="sec">Resumo Clínico</div><div class="resumo-box" style="margin-bottom:18px">'+gemResumo+'</div>'
-      :'<div class="empty" style="padding:20px 0"><div class="empty-icon">📄</div><div style="font-size:13px">Análise não disponível para esta paciente</div></div>'
+      :""
     )
     +(gemAlertas.length
       ?'<div class="sec">Alertas Identificados</div>'
@@ -495,7 +519,41 @@ function renderPatient(){
 
   document.getElementById("content").innerHTML=
     banners
+    +reenvioHtml
     +'<div class="grid2"><div>'+analiseCol+'</div><div>'+respostasCol+'</div></div>';
+}
+
+// ── REENVIO PARA GEMINI ──────────────────────────────────
+async function reenviarParaGemini(){
+  var p  = S.selected;
+  var nm = pid(p);
+  S.reenviando = nm;
+  renderPatient(); // atualiza botão para spinner
+
+  try{
+    await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type":"text/plain"},
+      body: JSON.stringify({ dados: p, _reanalise: true })
+    });
+    // no-cors: não recebemos resposta — aguarda 5s e recarrega
+    showToast("Reenvio concluído! Atualizando em instantes...");
+    setTimeout(async function(){
+      await loadPatients();
+      // Reabre a mesma paciente com dados atualizados
+      var idx = -1;
+      for(var i=0;i<S.patients.length;i++){ if(pid(S.patients[i])===nm){ idx=i; break; } }
+      if(idx>=0){ S.selected=S.patients[idx]; S.editData=Object.assign({},S.selected); }
+      S.reenviando = null;
+      renderPatList();
+      renderPatient();
+    }, 5000);
+  } catch(e){
+    S.reenviando = null;
+    showToast("Erro ao reenviar: "+e.message,"⚠️");
+    renderPatient();
+  }
 }
 
 // ── EDIÇÃO ────────────────────────────────────────────
