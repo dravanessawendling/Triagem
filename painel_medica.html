@@ -123,13 +123,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{display:inline-block;animation:spin 1s linear infinite;}
 
-/* REENVIO */
-.reenvio-banner{background:var(--amber-l);border:1px solid var(--amber);border-radius:11px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:4px;}
-.reenvio-text{font-size:13px;color:var(--dark);line-height:1.5;}
-.reenvio-text strong{color:var(--amber);}
-.btn-amber{background:var(--amber);color:white;}
-.btn-amber:hover:not(:disabled){background:#b8753a;}
-
 /* PATIENT TABLE ROW */
 .pat-row{padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .15s;}
 .pat-row:last-child{border-bottom:none;}
@@ -177,10 +170,10 @@ label.lbl{font-size:12px;font-weight:700;color:var(--mid);display:block;margin-b
 
 <script>
 // ── CONFIGURAÇÃO ──────────────────────────────────────
-// URL do Google Apps Script (leitura, gravação e reenvio para Gemini)
-var APPS_SCRIPT_URL  = "COLE_A_URL_DO_APPS_SCRIPT_AQUI";
-var WEBHOOK_LEITOR   = APPS_SCRIPT_URL;
-var WEBHOOK_ESCRITOR = APPS_SCRIPT_URL;
+// URL do Google Apps Script (mesma para ler e gravar)
+var APPS_SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbxNYQ25rS2JjS8H8gVCIsxAT0G17eQ1o_vC4hV79XmdgLm08MHuDm5nneXeBFSnbNud/exec";
+var WEBHOOK_LEITOR   = APPS_SCRIPT_URL;  // GET → retorna JSON com todas as linhas
+var WEBHOOK_ESCRITOR = APPS_SCRIPT_URL;  // POST → grava/atualiza linha
 
 // Mapeamento dos campos do questionário
 var FIELD_LABELS = {
@@ -208,14 +201,9 @@ var FIELD_ORDER = Object.keys(FIELD_LABELS);
 
 // Campos com análise do Gemini (vindos da planilha)
 // Adapte os nomes conforme os cabeçalhos reais da sua planilha
-var GEMINI_RESUMO = ["Resumoi_Clínico_gemini","Resumo_Clinico_gemini","resumo_gemini","Resumo_gemini"];
+var GEMINI_RESUMO = ["Resumo_Clinico_gemini","Resumoi_Clínico_gemini","Resumoi_Clinico_gemini","resumo_gemini","Resumo_gemini"];
 var GEMINI_ALERTAS = ["Alertas_imediatos_gemini","Alertas_gemini","alertas_gemini"];
 var GEMINI_PROCS   = ["Procedimentos_sugeridos_gemini","Procedimentos_gemini","procedimentos_gemini"];
-
-// Verifica se a análise Gemini existe para esta paciente
-function temAnalise(p){
-  var r=getField(p,GEMINI_RESUMO); return r&&r.trim().length>10;
-}
 
 // Respostas que disparam destaque visual automático
 var ALERT_TRIGGERS = {
@@ -233,7 +221,6 @@ var S = {
   editMode: false,
   editData: {},
   syncing: false,
-  reenviando: null,
   view: "dashboard"
 };
 
@@ -359,12 +346,12 @@ function renderPatList(){
     var hasHigh=alerts.some(function(a){return a.lv==="alta";});
     var hasMed=!hasHigh&&alerts.some(function(a){return a.lv==="media";});
     var isSel=S.selected&&pid(S.selected)===nm;
-    var analisada=temAnalise(p);
+    var temAnalise=!!getField(p,GEMINI_RESUMO);
     return '<div class="pat-card'+(isSel?" sel":"")+'" onclick="openPatient('+i+')">'
       +'<div class="pat-name">'+nm+'</div>'
       +'<div class="pat-meta">'+(p.idade||"—")+'</div>'
       +(hasHigh?'<span class="badge b-err">⚠ Alerta</span>':hasMed?'<span class="badge b-amb">⚡ Atenção</span>':"")
-      +(analisada?'<span class="badge b-ok">✓ Gemini</span>':'<span class="badge b-amb">⚡ Sem análise</span>')
+      +(temAnalise?'<span class="badge b-ok">✓ Analisado</span>':"")
       +'</div>';
   }).join("");
 }
@@ -444,28 +431,10 @@ function renderPatient(){
         return'<div class="al al-h"><span style="font-size:15px;flex-shrink:0">🔴</span><div><div class="al-title">Atenção: '+a.field+'</div><div class="al-text">'+a.val+'</div></div></div>';
       }).join("")+'</div>':"");
 
-  // ── Detecta se análise existe
-  var analisePronta = temAnalise(p);
-  var isReenviando  = S.reenviando === pid(p);
-
-  // ── Banner de reenvio (aparece quando não há análise)
-  var reenvioHtml = "";
-  if(!analisePronta){
-    reenvioHtml =
-      '<div class="reenvio-banner">'
-      +'<div class="reenvio-text"><strong>Análise Gemini não encontrada</strong><br>'
-      +'Pode ter ocorrido um erro no envio ou a chave não estava configurada.</div>'
-      +(isReenviando
-        ?'<button class="btn btn-amber btn-sm" disabled><span class="spin">↻</span> Reenviando...</button>'
-        :'<button class="btn btn-amber btn-sm" onclick="reenviarParaGemini(S.selected)">↻ Reenviar para Gemini</button>'
-      )
-      +'</div>';
-  }
-
   // ── Coluna da ANÁLISE GEMINI
   var analiseCol='<div class="card">'
     +'<div class="card-head"><span class="card-title">🤖 Análise Gemini</span>'
-    +'<span style="font-size:11px;color:var(--mid);font-style:italic">'+(analisePronta?'Gerada automaticamente no envio':'Não disponível')+'</span></div>'
+    +'<span style="font-size:11px;color:var(--mid);font-style:italic">Gerada automaticamente no envio</span></div>'
     +'<div class="card-body">'
     +(gemResumo
       ?'<div class="sec">Resumo Clínico</div><div class="resumo-box" style="margin-bottom:18px">'+gemResumo+'</div>'
@@ -529,39 +498,6 @@ function renderPatient(){
     +'<div class="grid2"><div>'+analiseCol+'</div><div>'+respostasCol+'</div></div>';
 }
 
-// ── REENVIO PARA GEMINI ──────────────────────────────────
-async function reenviarParaGemini(p){
-  var nm = pid(p);
-  S.reenviando = nm;
-  renderPatient(); // mostra spinner no botão
-
-  try{
-    // Envia as respostas de volta ao Apps Script com flag de reanalise
-    await fetch(APPS_SCRIPT_URL,{
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify({ dados: p, _reanalise: true })
-    });
-    // no-cors: não recebemos resposta — aguarda 4s e recarrega
-    showToast("Reenvio concluído! Atualizando em instantes...");
-    setTimeout(async function(){
-      await loadPatients();
-      // Reabre o paciente atualizado
-      var idx = S.patients.findIndex ? S.patients.findIndex(function(x){return pid(x)===nm;})
-              : (function(){ for(var i=0;i<S.patients.length;i++) if(pid(S.patients[i])===nm) return i; return -1; })();
-      if(idx>=0){ S.selected=S.patients[idx]; S.editData=Object.assign({},S.selected); }
-      S.reenviando=null;
-      renderPatList();
-      renderPatient();
-    }, 4000);
-  }catch(e){
-    S.reenviando=null;
-    showToast("Erro ao reenviar: "+e.message,"⚠️");
-    renderPatient();
-  }
-}
-
 // ── EDIÇÃO ────────────────────────────────────────────
 function enterEdit(){
   S.editMode=true;
@@ -581,7 +517,7 @@ async function saveAndSync(){
     '<button class="btn btn-sage btn-sm" disabled><span class="spin">↻</span> Sincronizando...</button>';
   try{
     // Monta array de valores na ordem das colunas
-    var cols=["Data_Hora","nome_paciente","idade","status_reprodutivo","ultimo_preventivo","ciclo","sangramento_irregular","contraceptivo","dor_relacao","libido","fogachos","ressecamento","humor_sono","incontinencia","peso_pelvico","frouxidao","estetica_intima","queixas_esteticas","motivo_consulta","observacao","Resumoi_Clínico_gemini","Alertas_imediatos_gemini","Procedimentos_sugeridos_gemini"];
+    var cols=["Data_Hora","nome_paciente","idade","status_reprodutivo","ultimo_preventivo","ciclo","sangramento_irregular","contraceptivo","dor_relacao","libido","fogachos","ressecamento","humor_sono","incontinencia","peso_pelvico","frouxidao","estetica_intima","queixas_esteticas","motivo_consulta","observacao","Resumo_Clinico_gemini","Alertas_imediatos_gemini","Procedimentos_sugeridos_gemini"];
     var vals=cols.map(function(k){var v=S.editData[k]||S.editData[k.toLowerCase()]||"";return Array.isArray(v)?v.join(", "):String(v);});
     await fetch(WEBHOOK_ESCRITOR,{
       method:"POST", mode:"no-cors",
