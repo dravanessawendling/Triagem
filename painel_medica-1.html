@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Clínico — Dra. Vanessa Wendling</title>
+<style>
+:root {
+  --rose:#C8627A; --rose-l:#F9EEF1; --rose-m:#EAB0BC;
+  --sage:#7A9E8E; --sage-l:#EEF5F2;
+  --cream:#FAF7F5; --dark:#2C2328; --mid:#6B5B60;
+  --border:#EDE4E7; --white:#FFFFFF;
+  --amber:#D4905A; --amber-l:#FDF3EC;
+  --red:#C0392B; --red-l:#FDEEEC;
+  --blue:#4A7FA5; --blue-l:#EBF3F9;
+  --green:#059669; --green-l:#D1FAE5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh;}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--rose-m);border-radius:10px}
+.serif{font-family:Georgia,serif}
+
+/* LAYOUT */
+.layout{display:flex;min-height:100vh;}
+.sidebar{width:265px;min-width:265px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow-y:auto;}
+.main{flex:1;display:flex;flex-direction:column;overflow-y:auto;min-width:0;}
+
+/* SIDEBAR */
+.sb-header{padding:22px 18px 16px;border-bottom:1px solid var(--border);}
+.brand{font-size:10px;color:var(--rose-m);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--rose);display:inline-block;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.sb-title{font-size:17px;font-weight:700;color:var(--dark);line-height:1.3;font-family:Georgia,serif;}
+.sb-sub{font-size:11px;color:var(--mid);margin-top:3px;}
+.nav{padding:12px 10px;}
+.nav-lbl{font-size:10px;color:var(--rose-m);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:0 10px;margin:14px 0 6px;}
+.nav-btn{width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;border:none;background:none;cursor:pointer;font-size:13px;color:var(--mid);text-align:left;transition:all .2s;}
+.nav-btn:hover,.nav-btn.active{background:var(--rose-l);color:var(--rose);font-weight:600;}
+.pat-card{padding:11px 10px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:all .2s;margin-bottom:4px;}
+.pat-card:hover{background:var(--rose-l);border-color:var(--rose-m);}
+.pat-card.sel{background:var(--rose-l);border-color:var(--rose);}
+.pat-name{font-size:13px;font-weight:600;color:var(--dark);}
+.pat-meta{font-size:11px;color:var(--mid);margin-top:2px;}
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;margin-top:4px;margin-right:3px;}
+.b-ok{background:var(--green-l);color:var(--green);}
+.b-err{background:var(--red-l);color:var(--red);}
+.b-amb{background:var(--amber-l);color:var(--amber);}
+.sb-footer{padding:10px 12px 16px;border-top:1px solid var(--border);margin-top:auto;}
+
+/* TOPBAR */
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:14px 26px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;}
+.topbar-title{font-size:18px;font-weight:700;color:var(--dark);font-family:Georgia,serif;}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.btn-primary{background:var(--rose);color:white;}
+.btn-primary:hover:not(:disabled){background:#b5566d;}
+.btn-outline{background:white;color:var(--mid);border:1px solid var(--border);}
+.btn-outline:hover{border-color:var(--rose);color:var(--rose);}
+.btn-sage{background:var(--sage);color:white;}
+.btn-sage:hover:not(:disabled){background:#6a8e7e;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+
+/* CONTENT */
+.content{padding:22px 26px;flex:1;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.card-title{font-size:13px;font-weight:700;color:var(--dark);}
+.card-body{padding:18px;}
+
+/* STATS */
+.stat{background:var(--white);border:1px solid var(--border);border-radius:13px;padding:16px 20px;}
+.stat-lbl{font-size:11px;color:var(--mid);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.stat-val{font-size:28px;font-weight:700;color:var(--dark);margin:4px 0 2px;font-family:Georgia,serif;}
+.stat-sub{font-size:11px;color:var(--mid);}
+
+/* ALERT BOXES */
+.al{display:flex;gap:11px;padding:11px 13px;border-radius:9px;margin-bottom:8px;align-items:flex-start;}
+.al-h{background:var(--red-l);border-left:3px solid var(--red);}
+.al-m{background:var(--amber-l);border-left:3px solid var(--amber);}
+.al-l{background:var(--blue-l);border-left:3px solid var(--blue);}
+.al-title{font-size:13px;font-weight:700;color:var(--dark);margin-bottom:2px;}
+.al-text{font-size:12px;color:var(--dark);line-height:1.5;}
+
+/* CHIPS */
+.chip{display:inline-flex;align-items:center;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:700;margin:3px;}
+.chip-h{background:var(--red-l);color:var(--red);border:1px solid #f5c6c2;}
+.chip-m{background:var(--amber-l);color:var(--amber);border:1px solid #f5d9c4;}
+.chip-l{background:var(--blue-l);color:var(--blue);border:1px solid #c4dcf0;}
+
+/* RESUMO BOX */
+.resumo-box{background:linear-gradient(135deg,#fdf9ff,var(--rose-l));border:1px solid var(--rose-m);border-radius:11px;padding:16px 18px;font-size:13px;line-height:1.8;color:var(--dark);}
+
+/* ANSWER ROWS */
+.ans-row{padding:9px 0;border-bottom:1px solid var(--border);}
+.ans-row:last-child{border-bottom:none;}
+.ans-lbl{font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.ans-val{font-size:13px;color:var(--dark);line-height:1.5;}
+.ans-val.v-h{background:var(--red-l);color:var(--red);font-weight:700;padding:3px 8px;border-radius:5px;display:inline-block;}
+.ans-val.v-m{background:var(--amber-l);color:var(--amber);font-weight:700;padding:3px 8px;border-radius:5px;display:inline-block;}
+
+/* EDIT */
+.field{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--dark);background:var(--cream);resize:vertical;font-family:-apple-system,sans-serif;outline:none;transition:border-color .2s;}
+.field:focus{border-color:var(--rose);background:white;}
+
+/* SECTION TITLE */
+.sec{font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:1px;margin-bottom:11px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--dark);color:white;padding:12px 17px;border-radius:11px;font-size:13px;font-weight:600;z-index:1000;display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(0,0,0,.2);animation:slideup .3s ease;}
+@keyframes slideup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px;color:var(--mid);}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:.4;}
+
+/* SPIN */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin 1s linear infinite;}
+/* BANNER REENVIO */
+.btn-amber{background:var(--amber);color:white;}
+.btn-amber:hover:not(:disabled){background:#b8753a;}
+.reenvio-banner{background:var(--amber-l);border:1px solid var(--amber);border-radius:11px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;}
+.reenvio-txt{font-size:13px;color:var(--dark);line-height:1.5;}
+.reenvio-txt strong{color:var(--amber);}
+
+/* PATIENT TABLE ROW */
+.pat-row{padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .15s;}
+.pat-row:last-child{border-bottom:none;}
+.pat-row:hover{background:var(--rose-l);}
+.pat-row-name{font-size:14px;font-weight:700;color:var(--dark);}
+.pat-row-sub{font-size:12px;color:var(--mid);margin-top:2px;}
+
+label.lbl{font-size:12px;font-weight:700;color:var(--mid);display:block;margin-bottom:5px;}
+.help{font-size:11px;color:var(--mid);margin-top:4px;font-style:italic;}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-header">
+      <div class="brand"><span class="dot"></span>Sistema Clínico</div>
+      <div class="sb-title">Dra. Vanessa<br>Wendling</div>
+      <div class="sb-sub">Ginecologia &amp; Obstetrícia</div>
+    </div>
+    <div class="nav">
+      <div class="nav-lbl">Menu</div>
+      <button class="nav-btn active" id="nav-dash" onclick="switchView('dashboard')"><span>📊</span> Dashboard</button>
+      <button class="nav-btn" id="nav-cfg" onclick="switchView('config')"><span>⚙️</span> Configurações</button>
+      <div class="nav-lbl" style="margin-top:16px">Pacientes de Hoje</div>
+      <div id="pat-list"><div style="font-size:12px;color:var(--mid);padding:6px 10px">Carregando...</div></div>
+    </div>
+    <div class="sb-footer">
+      <button class="btn btn-outline" style="width:100%;font-size:12px" onclick="loadPatients()">↻ Atualizar lista</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div id="tb-left"><div class="topbar-title">Dashboard</div></div>
+      <div id="tb-right" style="display:flex;gap:8px;align-items:center"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<div class="toast" id="toast" style="display:none"></div>
+
+<script>
+// ── CONFIGURAÇÃO ──────────────────────────────────────
+// URL do Google Apps Script (mesma para ler e gravar)
+var APPS_SCRIPT_URL  = "https://script.google.com/macros/s/AKfycbxNYQ25rS2JjS8H8gVCIsxAT0G17eQ1o_vC4hV79XmdgLm08MHuDm5nneXeBFSnbNud/exec";
+var WEBHOOK_LEITOR   = APPS_SCRIPT_URL;  // GET → retorna JSON com todas as linhas
+var WEBHOOK_ESCRITOR = APPS_SCRIPT_URL;  // POST → grava/atualiza linha
+
+// Mapeamento dos campos do questionário
+var FIELD_LABELS = {
+  nome_paciente:"Nome",
+  idade:"Faixa Etária",
+  status_reprodutivo:"Status Reprodutivo",
+  ultimo_preventivo:"Último Preventivo",
+  ciclo:"Ciclo Menstrual",
+  sangramento_irregular:"Sangramento Irregular",
+  contraceptivo:"Método Contraceptivo",
+  dor_relacao:"Dor na Relação",
+  libido:"Desejo Sexual",
+  fogachos:"Ondas de Calor",
+  ressecamento:"Ressecamento Vaginal",
+  humor_sono:"Humor / Sono",
+  incontinencia:"Perda de Urina",
+  peso_pelvico:"Peso Pélvico",
+  frouxidao:"Frouxidão",
+  estetica_intima:"Estética Íntima",
+  queixas_esteticas:"Queixas Estéticas",
+  motivo_consulta:"Motivo da Consulta",
+  observacao:"Observações"
+};
+var FIELD_ORDER = Object.keys(FIELD_LABELS);
+
+// Campos com análise do Gemini (vindos da planilha)
+// Adapte os nomes conforme os cabeçalhos reais da sua planilha
+var GEMINI_RESUMO = ["Resumo_Clinico_gemini","Resumoi_Clínico_gemini","Resumoi_Clinico_gemini","resumo_gemini","Resumo_gemini"];
+var GEMINI_ALERTAS = ["Alertas_imediatos_gemini","Alertas_gemini","alertas_gemini"];
+var GEMINI_PROCS   = ["Procedimentos_sugeridos_gemini","Procedimentos_gemini","procedimentos_gemini"];
+
+// Respostas que disparam destaque visual automático
+var ALERT_TRIGGERS = {
+  ultimo_preventivo: {"Mais de 3 anos atrás":"alta","Nunca realizei":"alta"},
+  sangramento_irregular: {"Sim, com frequência":"alta"},
+  dor_relacao: {"Sempre ou intensa":"alta","Com frequência, moderada":"media"},
+  fogachos: {"Intenso, afeta minha qualidade de vida":"alta","Com frequência / moderado":"media"},
+  incontinencia: {"Com frequência, perda significativa":"alta","Às vezes, perda moderada":"media"}
+};
+
+// ── STATE ─────────────────────────────────────────────
+var S = {
+  patients: [],
+  selected: null,
+  editMode: false,
+  editData: {},
+  syncing: false,
+  reenviando: null,
+  view: "dashboard"
+};
+
+// ── DEMO DATA (fallback sem webhook) ─────────────────
+var DEMO = [
+  { "Data/Hora":"2026-05-29T13:58", nome_paciente:"Renata", idade:"26 – 35 anos", status_reprodutivo:"Pós-parto (mais de 1 ano)", ultimo_preventivo:"Nunca realizei", ciclo:"Fluxo muito escasso", sangramento_irregular:"Às vezes", contraceptivo:"Sim, injeção hormonal", dor_relacao:"Sempre ou intensa", libido:"Aumentado", fogachos:"Com frequência / moderado", ressecamento:"Moderado", humor_sono:"Insônia ou sono ruim", incontinencia:"Às vezes, perda moderada", peso_pelvico:"Às vezes, leve", frouxidao:"Sinto um pouco", estetica_intima:"Sim, é um dos motivos da minha consulta", queixas_esteticas:"Incômodo ao usar roupas justas", motivo_consulta:"Desejo de engravidar", observacao:"",
+    "Resumoi_Clínico_gemini":"Paciente de 26–35 anos, pós-parto tardio, usuária de anticoncepcional injetável com desejo ativo de engravidar. Nunca realizou preventivo ginecológico (Papanicolau). Apresenta dispareunia intensa, fogachos frequentes, ressecamento vaginal moderado e perda urinária ocasional. Perfil sugere hipoestrogenismo secundário ao injetável.",
+    "Alertas_imediatos_gemini":"Paciente nunca realizou o exame preventivo de colo de útero (Papanicolau)., Uso de contracepção hormonal injetável ativa em paciente com desejo imediato de gestação., Presença de fogachos moderados e ressecamento íntimo em paciente jovem, demandando investigação de hipoestrogenismo.",
+    "Procedimentos_sugeridos_gemini":'[{"nome":"Rastreio Oncológico","prioridade":"Alta","justificativa":"Nunca realizou preventivo (Papanicolau)."},{"nome":"Planejamento Familiar","prioridade":"Alta","justificativa":"Desejo de gravidez com anticoncepcional ativo."},{"nome":"Avaliação Hormonal","prioridade":"Média","justificativa":"Fogachos e ressecamento em paciente jovem."}]'
+  },
+  { "Data/Hora":"2026-05-29T14:03", nome_paciente:"Sueli", idade:"46 – 55 anos", status_reprodutivo:"Pós-parto (menos de 1 ano)", ultimo_preventivo:"Mais de 3 anos atrás", ciclo:"Fluxo muito intenso ou com cólicas fortes", sangramento_irregular:"Sim, com frequência", contraceptivo:"Sim, injeção hormonal", dor_relacao:"Com frequência, moderada", libido:"Muito baixo / ausente", fogachos:"Com frequência / moderado", ressecamento:"Leve, ocasional", humor_sono:"Insônia ou sono ruim", incontinencia:"Às vezes, perda moderada", peso_pelvico:"Às vezes, leve", frouxidao:"Sinto um pouco", estetica_intima:"Sim, já pesquisei sobre o assunto", queixas_esteticas:"Incômodo ao usar roupas justas", motivo_consulta:"Dúvidas sobre contracepção", observacao:"",
+    "Resumoi_Clínico_gemini":"Paciente de 46–55 anos em transição menopáusica com sangramento uterino anormal frequente e de fluxo intenso. Apresenta disfunção sexual (dispareunia e libido ausente), fogachos moderados, insônia e perda urinária. Preventivo ginecológico atrasado há mais de 3 anos.",
+    "Alertas_imediatos_gemini":"Sangramento uterino irregular frequente e intenso na faixa etária de transição menopáusica, necessitando investigação endometrial urgente., Preventivo de colo de útero atrasado há mais de 3 anos.",
+    "Procedimentos_sugeridos_gemini":'[{"nome":"Investigação de Sangramento","prioridade":"Alta","justificativa":"Sangramento intenso na perimenopausa — descartar hiperplasia/pólipo."},{"nome":"Rastreio Oncológico","prioridade":"Alta","justificativa":"Preventivo atrasado há 3+ anos."},{"nome":"Abordagem do Climatério","prioridade":"Média","justificativa":"Fogachos, insônia e disfunção sexual."}]'
+  },
+  { "Data/Hora":"2026-05-30T08:16", nome_paciente:"Vanessa", idade:"36 – 45 anos", status_reprodutivo:"Pós-parto (mais de 1 ano)", ultimo_preventivo:"Menos de 1 ano atrás", ciclo:"Em uso de hormônios / anticoncepcional", sangramento_irregular:"Não", contraceptivo:"Sim, pílula oral", dor_relacao:"Às vezes, leve", libido:"Diminuído em relação ao que era antes", fogachos:"Não", ressecamento:"Leve, ocasional", humor_sono:"Irritabilidade ou mudanças de humor", incontinencia:"Raramente, gotejamento mínimo", peso_pelvico:"Nunca senti", frouxidao:"Não sinto nenhuma alteração", estetica_intima:"Tenho curiosidade, mas não sei o que existe", queixas_esteticas:"Nenhuma dessas", motivo_consulta:"Rotina / check-up ginecológico", observacao:"",
+    "Resumoi_Clínico_gemini":"Paciente de 36–45 anos, pós-parto tardio, em uso de pílula oral com preventivo atualizado. Consulta de rotina com queixas leves: diminuição de libido, ressecamento vaginal ocasional, irritabilidade e perda urinária mínima. Perfil clínico estável.",
+    "Alertas_imediatos_gemini":"",
+    "Procedimentos_sugeridos_gemini":'[{"nome":"Check-up Preventivo","prioridade":"Média","justificativa":"Rotina — exames de rastreio atualizados."},{"nome":"Saúde Sexual","prioridade":"Média","justificativa":"Investigar redução de libido e ressecamento leve."}]'
+  }
+];
+
+// ── UTILS ─────────────────────────────────────────────
+function pid(p){ return p.nome_paciente||p.nome||"?"; }
+
+function fmtDate(s){
+  if(!s) return "";
+  var d=new Date(s); if(isNaN(d)) return s;
+  return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+}
+
+function disp(v){
+  if(v===null||v===undefined||v==="") return "—";
+  if(Array.isArray(v)) return v.join(", ");
+  return String(v);
+}
+
+function alertLv(field,val){
+  var map=ALERT_TRIGGERS[field]; if(!map) return null;
+  if(Array.isArray(val)){for(var i=0;i<val.length;i++) if(map[val[i]]) return map[val[i]]; return null;}
+  return map[val]||null;
+}
+
+function visualAlerts(p){
+  var out=[];
+  for(var f in ALERT_TRIGGERS){var lv=alertLv(f,p[f]); if(lv) out.push({lv,field:FIELD_LABELS[f]||f,val:disp(p[f])});}
+  return out;
+}
+
+// Pega o valor do primeiro campo encontrado em lista de aliases
+function getField(p, aliases){
+  for(var i=0;i<aliases.length;i++) if(p[aliases[i]]!==undefined&&p[aliases[i]]!=="") return p[aliases[i]];
+  return "";
+}
+
+// Retorna true apenas se o resumo existir e NÃO for mensagem de erro
+function temAnaliseValida(p){
+  var r=getField(p,GEMINI_RESUMO).trim();
+  if(r.length<10) return false;
+  var erros=["ERRO DA API",""error"",""code"","503","500","429","UNAVAILABLE","Please try again"];
+  for(var i=0;i<erros.length;i++) if(r.indexOf(erros[i])>-1) return false;
+  return true;
+}
+
+// Parse de procedimentos (JSON array ou regex fallback)
+function parseProcs(raw){
+  if(!raw) return [];
+  if(typeof raw==="object"&&Array.isArray(raw)) return raw;
+  var s=String(raw).trim();
+  // tenta parse direto
+  try{ var a=JSON.parse(s); if(Array.isArray(a)) return a; } catch(e){}
+  // tenta extrair array de dentro de texto maior
+  var m=s.match(/\[[\s\S]*\]/);
+  if(m){ try{ var b=JSON.parse(m[0]); if(Array.isArray(b)) return b; }catch(e){} }
+  // fallback objeto a objeto
+  var objs=s.match(/\{[^}]+\}/g)||[];
+  return objs.map(function(o){
+    var nome=(o.match(/"nome"\s*:\s*"([^"]+)"/))||[]; 
+    var pri=(o.match(/"prioridade"\s*:\s*"([^"]+)"/))||[];
+    var just=(o.match(/"justificativa"\s*:\s*"([^"]+)"/))||[];
+    return {nome:nome[1]||"",prioridade:pri[1]||"",justificativa:just[1]||""};
+  }).filter(function(p){return p.nome;});
+}
+
+// Parse de alertas (array JSON, ou string separada por ".,")
+function parseAlerts(raw){
+  if(!raw) return [];
+  if(Array.isArray(raw)) return raw;
+  var s=String(raw).trim(); if(!s) return [];
+  try{ var a=JSON.parse(s); if(Array.isArray(a)) return a; }catch(e){}
+  return s.split(/\.,?\s*/).map(function(x){return x.trim();}).filter(function(x){return x.length>8;});
+}
+
+function showToast(msg,icon){
+  icon=icon||"✓";
+  var t=document.getElementById("toast");
+  t.innerHTML=icon+" "+msg; t.style.display="flex";
+  clearTimeout(window._tt);
+  window._tt=setTimeout(function(){t.style.display="none";},3500);
+}
+
+// ── NAVEGAÇÃO ─────────────────────────────────────────
+function switchView(v){
+  S.view=v; S.selected=null; S.editMode=false;
+  document.getElementById("nav-dash").classList.toggle("active",v==="dashboard");
+  document.getElementById("nav-cfg").classList.toggle("active",v==="config");
+  if(v==="dashboard") renderDashboard();
+  else if(v==="config") renderConfig();
+  renderPatList();
+}
+
+// ── CARREGAR PACIENTES ────────────────────────────────
+async function loadPatients(){
+  document.getElementById("pat-list").innerHTML='<div style="font-size:12px;color:var(--mid);padding:6px 10px">Carregando...</div>';
+  try{
+    var res=await fetch(WEBHOOK_LEITOR);
+    var data=await res.json();
+    S.patients=(Array.isArray(data)?data:[data]).reverse();
+  }catch(e){
+    S.patients=DEMO; // usa demo se webhook falhar
+  }
+  renderPatList();
+  if(S.view==="dashboard") renderDashboard();
+}
+
+function renderPatList(){
+  var el=document.getElementById("pat-list");
+  if(!S.patients.length){el.innerHTML='<div style="font-size:12px;color:var(--mid);padding:6px 10px">Nenhuma paciente.</div>';return;}
+  el.innerHTML=S.patients.map(function(p,i){
+    var nm=pid(p);
+    var alerts=visualAlerts(p);
+    var hasHigh=alerts.some(function(a){return a.lv==="alta";});
+    var hasMed=!hasHigh&&alerts.some(function(a){return a.lv==="media";});
+    var isSel=S.selected&&pid(S.selected)===nm;
+    var temAnalise=temAnaliseValida(p);
+    return '<div class="pat-card'+(isSel?" sel":"")+'" onclick="openPatient('+i+')">'
+      +'<div class="pat-name">'+nm+'</div>'
+      +'<div class="pat-meta">'+(p.idade||"—")+'</div>'
+      +(hasHigh?'<span class="badge b-err">⚠ Alerta</span>':hasMed?'<span class="badge b-amb">⚡ Atenção</span>':"")
+      +(temAnalise?'<span class="badge b-ok">✓ Analisado</span>':'<span class="badge b-amb">⚡ Sem análise</span>')
+      +'</div>';
+  }).join("");
+}
+
+// ── DASHBOARD ─────────────────────────────────────────
+function renderDashboard(){
+  document.getElementById("tb-left").innerHTML='<div class="topbar-title">Dashboard</div>';
+  document.getElementById("tb-right").innerHTML='<button class="btn btn-outline btn-sm" onclick="loadPatients()">↻ Atualizar</button>';
+
+  var total=S.patients.length;
+  var comAlerta=S.patients.filter(function(p){return visualAlerts(p).some(function(a){return a.lv==="alta";});}).length;
+  var analisados=S.patients.filter(function(p){return temAnaliseValida(p);}).length;
+
+  var rows=S.patients.map(function(p,i){
+    var nm=pid(p);
+    var alerts=visualAlerts(p).filter(function(a){return a.lv==="alta";});
+    var temAnalise=temAnaliseValida(p);
+    var tags=alerts.map(function(a){return'<span class="badge b-err">⚠ '+a.field+'</span>';}).join("")
+      +(temAnalise?'<span class="badge b-ok">✓ Gemini</span>':'<span class="badge b-amb">⚡ Sem análise</span>');
+    return '<div class="pat-row" onclick="openPatient('+i+')">'
+      +'<div><div class="pat-row-name">'+nm+'</div>'
+      +'<div class="pat-row-sub">'+(p.idade||"—")+' · '+disp(p.motivo_consulta)+'</div>'
+      +(tags?'<div style="margin-top:5px">'+tags+'</div>':"")
+      +'</div>'
+      +'<div style="text-align:right;flex-shrink:0;padding-left:12px"><div style="font-size:11px;color:var(--mid)">'+fmtDate(p["Data/Hora"]||p.data_hora)+'</div></div>'
+      +'</div>';
+  }).join("");
+
+  document.getElementById("content").innerHTML=
+    '<div class="grid3" style="margin-bottom:20px">'
+    +'<div class="stat"><div class="stat-lbl">Triagens Hoje</div><div class="stat-val">'+total+'</div><div class="stat-sub">pacientes registradas</div></div>'
+    +'<div class="stat" style="border-left:3px solid var(--red)"><div class="stat-lbl">Alertas Críticos</div><div class="stat-val" style="color:var(--red)">'+comAlerta+'</div><div class="stat-sub">requerem atenção imediata</div></div>'
+    +'<div class="stat" style="border-left:3px solid var(--sage)"><div class="stat-lbl">Analisadas pelo Gemini</div><div class="stat-val" style="color:var(--sage)">'+analisados+'</div><div class="stat-sub">com resumo clínico</div></div>'
+    +'</div>'
+    +'<div class="card"><div class="card-head"><span class="card-title">📋 Pacientes de Hoje</span><span style="font-size:12px;color:var(--mid)">Clique para abrir</span></div>'
+    +(total===0?'<div class="empty"><div class="empty-icon">📂</div><div>Nenhuma triagem registrada hoje</div></div>':rows)
+    +'</div>';
+}
+
+// ── ABRIR PACIENTE ────────────────────────────────────
+function openPatient(i){
+  S.selected=S.patients[i];
+  S.editMode=false;
+  S.editData=Object.assign({},S.selected);
+  S.view="patient";
+  renderPatList();
+  renderPatient();
+}
+
+function renderPatient(){
+  var p=S.selected;
+  var nm=pid(p);
+  var alerts=visualAlerts(p);
+  var highAlerts=alerts.filter(function(a){return a.lv==="alta";});
+  var medAlerts=alerts.filter(function(a){return a.lv==="media";});
+
+  // Dados do Gemini vindos da planilha
+  var gemResumo  = getField(p, GEMINI_RESUMO);
+  var gemAlertas = parseAlerts(getField(p, GEMINI_ALERTAS));
+  var gemProcs   = parseProcs(getField(p, GEMINI_PROCS));
+
+  // ── Topbar
+  document.getElementById("tb-left").innerHTML=
+    '<div style="display:flex;align-items:center;gap:10px">'
+    +'<button class="btn btn-outline btn-sm" onclick="switchView(\'dashboard\')">← Voltar</button>'
+    +'<div class="topbar-title serif">'+nm+'</div>'
+    +'</div>';
+
+  document.getElementById("tb-right").innerHTML= S.editMode
+    ?'<button class="btn btn-outline btn-sm" onclick="cancelEdit()">Cancelar</button>'
+     +'<button class="btn btn-sage btn-sm" onclick="saveAndSync()" '+(S.syncing?"disabled":"")+'>'+( S.syncing?'<span class="spin">↻</span> Sincronizando...':'✓ Salvar & Sincronizar')+'</button>'
+    :'<button class="btn btn-outline btn-sm" onclick="enterEdit()">✎ Editar respostas</button>';
+
+  // ── Banners de alerta crítico
+  var banners=(highAlerts.length
+    ?'<div style="margin-bottom:16px">'+highAlerts.map(function(a){
+        return'<div class="al al-h"><span style="font-size:15px;flex-shrink:0">🔴</span><div><div class="al-title">Atenção: '+a.field+'</div><div class="al-text">'+a.val+'</div></div></div>';
+      }).join("")+'</div>':"");
+
+  // ── Detecta se análise é válida ou contém erro da API
+  var _r = gemResumo.trim();
+  var _erroTermos = ["ERRO DA API",""error"",""code"","503","500","429","UNAVAILABLE","Please try again"];
+  var _temErro = _erroTermos.some(function(t){ return _r.indexOf(t) > -1; });
+  var analisePronta = _r.length > 10 && !_temErro;
+  var isReenviando  = S.reenviando === nm;
+  var _erroMsg = _temErro
+    ? "Erro da API Gemini: " + _r.replace(/[{}"]/g,"").slice(0,140) + "..."
+    : "Pode ter ocorrido um erro no envio ou a chave não estava configurada.";
+
+  // ── Coluna da ANÁLISE GEMINI
+  var analiseCol='<div class="card">'
+    +'<div class="card-head"><span class="card-title">🤖 Análise Gemini</span>'
+    +'<span style="font-size:11px;color:var(--mid);font-style:italic">'+(analisePronta?'Gerada automaticamente no envio':'Não disponível')+'</span></div>'
+    +'<div class="card-body">'
+    +(!analisePronta
+      ?'<div class="reenvio-banner">'
+        +'<div class="reenvio-txt"><strong>⚡ Análise Gemini não disponível</strong><br>'+_erroMsg+'</div>'
+        +(isReenviando
+          ?'<button class="btn btn-amber btn-sm" disabled><span class="spin">↻</span> Reenviando...</button>'
+          :'<button class="btn btn-amber btn-sm" onclick="reenviarParaGemini()">↻ Reenviar para Gemini</button>'
+        )
+        +'</div>'
+      :""
+    )
+    +(analisePronta
+      ?'<div class="sec">Resumo Clínico</div><div class="resumo-box" style="margin-bottom:18px">'+gemResumo+'</div>'
+      :""
+    )
+    +(gemAlertas.length
+      ?'<div class="sec">Alertas Identificados</div>'
+       +gemAlertas.map(function(a){
+          return'<div class="al al-h"><span style="font-size:13px;flex-shrink:0;margin-top:1px">⚠️</span><div class="al-text">'+a+'</div></div>';
+        }).join("")
+      :"")
+    +(gemProcs.length
+      ?'<div class="sec" style="margin-top:16px">Condutas Sugeridas</div>'
+       +'<div>'+gemProcs.map(function(proc){
+          var pri=proc.prioridade||"";
+          var cls=pri==="Alta"?"chip-h":pri==="Média"?"chip-m":"chip-l";
+          return'<span class="chip '+cls+'" title="'+(proc.justificativa||"")+'">'+proc.nome+(pri?' · '+pri:'')+'</span>';
+        }).join("")+'</div>'
+      :"")
+    +(medAlerts.length
+      ?'<div class="sec" style="margin-top:16px">Atenção nas Respostas</div>'
+       +medAlerts.map(function(a){
+          return'<div class="al al-m"><span style="font-size:13px;flex-shrink:0">⚡</span><div><div class="al-title">'+a.field+'</div><div class="al-text">'+a.val+'</div></div></div>';
+        }).join("")
+      :"")
+    +'</div></div>';
+
+  // ── Coluna das RESPOSTAS
+  var ansRows=FIELD_ORDER.filter(function(f){return f!=="nome_paciente";}).map(function(f){
+    var label=FIELD_LABELS[f];
+    var rawVal=S.editMode?S.editData[f]:p[f];
+    var lv=alertLv(f,rawVal);
+    var cls=lv==="alta"?"v-h":lv==="media"?"v-m":"";
+    return '<div class="ans-row">'
+      +'<div class="ans-lbl">'+(lv?'<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+(lv==="alta"?"var(--red)":"var(--amber)")+';margin-right:5px;vertical-align:middle"></span>':"")+label+'</div>'
+      +(S.editMode
+        ?'<textarea class="field" rows="1" oninput="S.editData[\''+f+'\']=this.value" style="resize:none">'+disp(rawVal).replace(/</g,"&lt;")+'</textarea>'
+        :'<div class="ans-val '+cls+'">'+disp(rawVal)+'</div>'
+      )
+      +'</div>';
+  }).join("");
+
+  var notasField=S.editMode
+    ?'<div style="margin-top:14px;padding:13px;background:var(--sage-l);border-radius:10px">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--sage);margin-bottom:6px">💡 Anotações da Médica</div>'
+      +'<textarea class="field" rows="4" placeholder="Diagnóstico, prescrições, encaminhamentos..." oninput="S.editData._notas_medica=this.value">'+((S.editData._notas_medica)||"")+'</textarea>'
+      +'</div>'
+    :(p._notas_medica
+      ?'<div style="margin-top:14px;padding:13px;background:var(--sage-l);border-radius:10px">'
+        +'<div style="font-size:11px;font-weight:700;color:var(--sage);margin-bottom:5px">💡 Anotações da Médica</div>'
+        +'<div style="font-size:13px;white-space:pre-wrap;line-height:1.6">'+p._notas_medica+'</div>'
+        +'</div>'
+      :"");
+
+  var respostasCol='<div class="card"><div class="card-head"><span class="card-title">📋 Respostas da Triagem</span>'
+    +(S.editMode?'<span style="font-size:12px;color:var(--rose);font-weight:700">✎ Editando</span>':"")
+    +'</div><div class="card-body">'+ansRows+notasField+'</div></div>';
+
+  document.getElementById("content").innerHTML=
+    banners
+    +'<div class="grid2"><div>'+analiseCol+'</div><div>'+respostasCol+'</div></div>';
+}
+
+// ── REENVIO PARA GEMINI ──────────────────────────────────
+async function reenviarParaGemini(){
+  var p  = S.selected;
+  var nm = pid(p);
+  S.reenviando = nm;
+  renderPatient();
+  try{
+    await fetch(APPS_SCRIPT_URL,{
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({ dados:p, _reanalise:true })
+    });
+    showToast("Reenvio concluído! Atualizando em instantes...");
+    setTimeout(async function(){
+      await loadPatients();
+      var idx=-1;
+      for(var i=0;i<S.patients.length;i++){ if(pid(S.patients[i])===nm){idx=i;break;} }
+      if(idx>=0){ S.selected=S.patients[idx]; S.editData=Object.assign({},S.selected); }
+      S.reenviando=null;
+      renderPatList();
+      renderPatient();
+    },5000);
+  }catch(e){
+    S.reenviando=null;
+    showToast("Erro ao reenviar: "+e.message,"⚠️");
+    renderPatient();
+  }
+}
+
+// ── EDIÇÃO ────────────────────────────────────────────
+function enterEdit(){
+  S.editMode=true;
+  S.editData=Object.assign({},S.selected);
+  renderPatient();
+}
+
+function cancelEdit(){
+  S.editMode=false;
+  S.editData=Object.assign({},S.selected);
+  renderPatient();
+}
+
+async function saveAndSync(){
+  S.syncing=true;
+  document.getElementById("tb-right").innerHTML=
+    '<button class="btn btn-sage btn-sm" disabled><span class="spin">↻</span> Sincronizando...</button>';
+  try{
+    // Monta array de valores na ordem das colunas
+    var cols=["Data_Hora","nome_paciente","idade","status_reprodutivo","ultimo_preventivo","ciclo","sangramento_irregular","contraceptivo","dor_relacao","libido","fogachos","ressecamento","humor_sono","incontinencia","peso_pelvico","frouxidao","estetica_intima","queixas_esteticas","motivo_consulta","observacao","Resumo_Clinico_gemini","Alertas_imediatos_gemini","Procedimentos_sugeridos_gemini"];
+    var vals=cols.map(function(k){var v=S.editData[k]||S.editData[k.toLowerCase()]||"";return Array.isArray(v)?v.join(", "):String(v);});
+    await fetch(WEBHOOK_ESCRITOR,{
+      method:"POST", mode:"no-cors",
+      headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({valores:vals})
+    });
+    showToast("Dados sincronizados com a planilha!");
+  }catch(e){
+    showToast("Salvo localmente (webhook offline)","⚠️");
+  }
+  // Atualiza estado local
+  var nm=pid(S.editData);
+  S.patients=S.patients.map(function(p){return pid(p)===nm?S.editData:p;});
+  S.selected=S.editData;
+  S.editMode=false;
+  S.syncing=false;
+  renderPatList();
+  renderPatient();
+}
+
+// ── CONFIG ────────────────────────────────────────────
+function renderConfig(){
+  document.getElementById("tb-left").innerHTML='<div class="topbar-title">Configurações</div>';
+  document.getElementById("tb-right").innerHTML="";
+  document.getElementById("content").innerHTML=
+    '<div style="max-width:520px">'
+
+    // Webhooks
+    +'<div class="card"><div class="card-head"><span class="card-title">🔗 Webhooks Make.com</span></div>'
+    +'<div class="card-body">'
+    +'<p style="font-size:13px;color:var(--mid);margin-bottom:16px;line-height:1.6">O <strong>Leitor</strong> carrega os dados da planilha. O <strong>Escritor</strong> sincroniza edições de volta ao Google Sheets.</p>'
+    +'<label class="lbl">Webhook Leitor (GET)</label>'
+    +'<input class="field" value="'+WEBHOOK_LEITOR+'" readonly style="margin-bottom:13px">'
+    +'<label class="lbl">Webhook Escritor (POST)</label>'
+    +'<input class="field" value="'+WEBHOOK_ESCRITOR+'" readonly>'
+    +'<p class="help" style="margin-top:8px">Para alterar, edite as variáveis WEBHOOK_LEITOR e WEBHOOK_ESCRITOR no início do código HTML.</p>'
+    +'</div></div>'
+
+    // Mapeamento de colunas
+    +'<div class="card"><div class="card-head"><span class="card-title">📊 Colunas da Planilha (Gemini)</span></div>'
+    +'<div class="card-body">'
+    +'<p style="font-size:13px;color:var(--mid);margin-bottom:14px;line-height:1.6">O painel tenta automaticamente estes nomes de coluna. Se a análise não aparecer, verifique os cabeçalhos da sua planilha e ajuste as variáveis no código.</p>'
+    +[["Resumo clínico",GEMINI_RESUMO],["Alertas",GEMINI_ALERTAS],["Procedimentos",GEMINI_PROCS]].map(function(r){
+      return'<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">'
+        +'<div style="font-size:12px;font-weight:700;color:var(--mid);margin-bottom:4px">'+r[0]+'</div>'
+        +'<div style="font-size:12px;color:var(--dark);font-family:monospace;background:var(--cream);padding:6px 10px;border-radius:6px">'+r[1].join(' / ')+'</div>'
+        +'</div>';
+    }).join("")
+    +'</div></div>'
+
+    // Como funciona
+    +'<div class="card"><div class="card-head"><span class="card-title">💡 Como funciona o fluxo</span></div>'
+    +'<div class="card-body">'
+    +[["📝","Paciente preenche o questionário","No formulário (index.html) e envia para o Make.com"],
+      ["🤖","Make.com processa com Gemini","O Make.com analisa as respostas e grava o resumo, alertas e condutas na planilha"],
+      ["📊","Google Sheets armazena tudo","Toda a triagem + análise Gemini ficam numa única linha da planilha"],
+      ["🖥️","Este painel lê e exibe","Carrega os dados via webhook e apresenta de forma organizada para a médica"],
+      ["✏️","Médica edita e sincroniza","Qualquer campo pode ser corrigido e sincronizado de volta à planilha"]
+    ].map(function(r,i,arr){
+      return'<div style="display:flex;gap:12px;padding-bottom:13px;margin-bottom:13px;'+(i<arr.length-1?"border-bottom:1px solid var(--border)":"")+'">'
+        +'<span style="font-size:17px;flex-shrink:0">'+r[0]+'</span>'
+        +'<div><div style="font-weight:700;font-size:13px;margin-bottom:2px">'+r[1]+'</div>'
+        +'<div style="font-size:12px;color:var(--mid);line-height:1.5">'+r[2]+'</div></div></div>';
+    }).join("")
+    +'</div></div></div>';
+}
+
+// ── INIT ──────────────────────────────────────────────
+loadPatients();
+</script>
+</body>
+</html>
